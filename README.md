@@ -1,2 +1,3 @@
 # react-calculator
-A simple neumorphic calculator in React.
+
+A simple neumorphic calculator created with React.
