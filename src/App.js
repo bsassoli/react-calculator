@@ -1,9 +1,25 @@
 import "./styles.css";
 import { keys } from "./keys";
 import Keyboard from "./components/Keyboard";
+import Display from "./components/Display";
 import { useState } from "react";
 
 function App() {
+  function evaluate(firstOperand, secondOperand, operator) {
+    switch (operator) {
+      case "+":
+        return firstOperand + secondOperand;
+      case "-":
+        return firstOperand - secondOperand;
+      case "/":
+        return firstOperand / secondOperand;
+      case "*":
+        return firstOperand * secondOperand;
+      default:
+        console.log("oops");
+    }
+  }
+
   const [currentOperand, setCurrentOperand] = useState("firstOperand");
   const [expression, setExpression] = useState({
     firstOperand: "",
@@ -11,6 +27,51 @@ function App() {
     operator: null,
     display: "0",
   });
+
+  const dispatcher = (val) => {
+    if (val === "AC") {
+      handleEraseAll();
+    } else if (val === "MC") {
+      handleEraseCurrent();
+    } else if (val === "+/-") {
+      handleSign();
+    } else if (val === "=") {
+      handleEqual();
+    } else if (["+", "/", "*", "-"].includes(val)) {
+      handleOperation(val);
+    } else {
+      handleNumber(val);
+    }
+  };
+
+  const handleEraseAll = () => {
+    const updatedExpression = {
+      operator: null,
+      firstOperand: "",
+      secondOperand: "",
+      display: "0",
+    };
+    setExpression(updatedExpression);
+  };
+
+  const handleEraseCurrent = () => {
+    const updatedExpression = {
+      ...expression,
+      [currentOperand]: "",
+      display: "0",
+    };
+    setExpression(updatedExpression);
+  };
+
+  const handleSign = () => {
+    const invertedOperand = expression[currentOperand] * -1;
+    const updatedExpression = {
+      ...expression,
+      [currentOperand]: invertedOperand,
+      display: invertedOperand
+    };
+    setExpression(updatedExpression);
+  };
 
   const handleNumber = (val) => {
     const newInput = expression[currentOperand] + val;
@@ -22,76 +83,56 @@ function App() {
     setExpression(updatedExpression);
   };
 
-  function evaluate(firstOperand, secondOperand, operator) {
-    switch (operator) {
-      case "+":
-          return firstOperand + secondOperand;
-      case "-":
-          return firstOperand - secondOperand;
-      case "/":
-          return firstOperand / secondOperand;
-      case "*":
-          return firstOperand * secondOperand;
-      default:
-        console.log("oops");
-    }
-  };
-
   const handleEqual = () => {
-    const res = evaluate(Number(expression.firstOperand), Number(expression.secondOperand), expression.operator);
+    const res = evaluate(
+      Number(expression.firstOperand),
+      Number(expression.secondOperand),
+      expression.operator
+    );
     const updatedExpression = {
       ...expression,
       firstOperand: res,
-      operator: null,
       display: res,
       secondOperand: "",
+      operator: expression.operator,
     };
     setExpression(updatedExpression);
-    console.log(updatedExpression);
-    setCurrentOperand("secondOperand");
+    setCurrentOperand("firstOperand");
     console.log(currentOperand);
   };
 
   const handleOperation = (val) => {
-    const updatedExpression = { ...expression, operator: val, display: val };
-    setExpression(updatedExpression);
-    console.log("From handleOperation:");
-    console.log(updatedExpression);
-    currentOperand === "firstOperand"
-      ? setCurrentOperand("secondOperand")
-      : handleEqual();
-  };
-
-  const handleErase = () => {
-    const updatedExpression = {
-      operator: null,
-      firstOperand: "",
-      secondOperand: "",
-      display: "0",
-    };
-    setExpression(updatedExpression);
-  };
-
-  const resultSetter = (val) => {
-    if (val === "AC" || val === "MC") {
-      handleErase();
-    } else if (val === "=") {
-      handleEqual();
-    } else if (["+", "/", "*", "-"].includes(val)) {
-      handleOperation(val);
+    let updatedExpression = expression;
+    if (currentOperand === "firstOperand") {
+      updatedExpression = {
+        ...expression,
+        display: val,
+        operator: val,
+      };
     } else {
-      handleNumber(val);
+      const res = evaluate(
+        Number(expression.firstOperand),
+        Number(expression.secondOperand),
+        expression.operator
+      );
+      updatedExpression = {
+        ...expression,
+        firstOperand: res,
+        display: res,
+        operator: val,
+        secondOperand: "",
+      };
     }
+    setCurrentOperand("secondOperand");
+    setExpression(updatedExpression);
   };
 
   return (
     <div>
       <h1>React Calculator</h1>
       <div className="container">
-        <div className="result">
-          <p>{expression.display}</p>
-        </div>
-        <Keyboard keys={keys} changeResult={resultSetter} />
+        <Display display={expression.display} />
+        <Keyboard keys={keys} changeResult={dispatcher} />
       </div>
     </div>
   );

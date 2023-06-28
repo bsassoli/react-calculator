@@ -1,7 +1,7 @@
 export const keys = [
     { val: "AC", cls: "button action-button" },
     { val: "MC", cls: "button action-button" },
-    { val: "%", cls: "button action-button" },
+    { val: "+/-", cls: "button action-button" },
     { val: "*", cls: "button calc-action-button" },
     { val: 7, cls: "button num-button" },
     { val: 8, cls: "button num-button" },
